@@ -1,68 +1,166 @@
-:root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+@theme {
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    Inter, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji",
+    "Segoe UI Emoji", "Segoe UI Symbol";
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  --color-bg: #f5f6f8; /* app background */
+  --color-surface: #ffffff; /* cards / inputs */
+  --color-border: #e6e8eb; /* soft outlines */
+  --color-text: #0f172a; /* slate-900-ish */
+  --color-muted: #6b7280; /* slate-500/600 */
+  --color-accent: #111827; /* near-black, matches "Add" button */
 
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
+  --shadow-soft: 0 1px 1px rgba(17, 24, 39, 0.04),
+    0 3px 8px rgba(17, 24, 39, 0.06);
+  --radius-lg: 14px;
+  --radius-xl: 18px;
 }
 
-body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
-}
-
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
-}
-
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
-}
-
-@media (prefers-color-scheme: light) {
+/* ──────────────────────────────────────────────────────────────────────────────
+   Base
+────────────────────────────────────────────────────────────────────────────── */
+@layer base {
   :root {
-    color: #213547;
-    background-color: #ffffff;
+    color-scheme: light;
+  }
+
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  body {
+    @apply antialiased;
+    background: var(--color-bg);
+    color: var(--color-text);
+    font-family: var(--font-sans);
+    margin: 0;
+  }
+
+  ::selection {
+    background: color-mix(in oklab, var(--color-accent) 18%, white);
+  }
+
+  a {
+    color: color-mix(in oklab, var(--color-accent) 70%, #64748b);
+    text-decoration: none;
   }
   a:hover {
-    color: #747bff;
+    text-decoration: underline;
   }
-  button {
-    background-color: #f9f9f9;
+
+  h1,
+  h2,
+  h3 {
+    @apply tracking-tight;
+  }
+}
+
+/* ──────────────────────────────────────────────────────────────────────────────
+   Components (light, neutral look like the screenshot)
+   These classes are optional helpers you can reuse anywhere.
+────────────────────────────────────────────────────────────────────────────── */
+@layer components {
+  /* App container */
+  .app-shell {
+    @apply mx-auto w-full max-w-[1280px] px-4 py-6 sm:px-6 lg:px-8;
+  }
+
+  /* Inputs / Search */
+  .ui-input {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    box-shadow: var(--shadow-soft);
+    border-radius: var(--radius-xl);
+    @apply w-full px-4 py-2 text-[15px] outline-none;
+  }
+  .ui-input::placeholder {
+    color: var(--color-muted);
+  }
+  .ui-input:focus {
+    @apply ring-2;
+    --tw-ring-color: color-mix(in oklab, var(--color-accent) 28%, white);
+  }
+
+  /* Primary button (round, like the "Add" badge) */
+  .ui-btn {
+    background: var(--color-accent);
+    color: white;
+    border-radius: 9999px;
+    @apply inline-flex select-none items-center justify-center px-4 py-2 text-sm font-medium;
+    box-shadow: var(--shadow-soft);
+  }
+  .ui-btn:hover {
+    filter: brightness(1.05);
+  }
+  .ui-btn:active {
+    transform: translateY(0.5px);
+  }
+  .ui-btn:focus-visible {
+    @apply ring-2;
+    --tw-ring-color: var(--color-accent);
+  }
+
+  /* Ghost / icon-only button (trash icon) */
+  .ui-btn-ghost {
+    background: var(--color-surface);
+    color: var(--color-muted);
+    border: 1px solid var(--color-border);
+    border-radius: 9999px;
+    @apply inline-flex items-center justify-center p-2;
+    box-shadow: var(--shadow-soft);
+  }
+  .ui-btn-ghost:hover {
+    @apply text-slate-700;
+  }
+
+  /* Cards for phrases */
+  .phrase-card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-soft);
+    @apply p-4;
+  }
+  .phrase-time {
+    color: var(--color-muted);
+    @apply mt-2 text-xs;
+  }
+
+  /* Grid like the screenshot */
+  .phrases-grid {
+    @apply grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3;
+  }
+
+  /* Small badge counter / helper text */
+  .muted {
+    color: var(--color-muted);
+  }
+
+  /* Toggle container (for "Dense" switch look) — styling shell only */
+  .toggle {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    @apply inline-flex items-center gap-2 rounded-full px-3 py-1 text-sm;
+    box-shadow: var(--shadow-soft);
+  }
+}
+
+/* ──────────────────────────────────────────────────────────────────────────────
+   Utilities
+────────────────────────────────────────────────────────────────────────────── */
+@layer utilities {
+  .shadow-soft {
+    box-shadow: var(--shadow-soft);
+  }
+  .surface {
+    background: var(--color-surface);
+  }
+  .border-soft {
+    border-color: var(--color-border);
+  }
+  .text-muted {
+    color: var(--color-muted);
   }
 }
