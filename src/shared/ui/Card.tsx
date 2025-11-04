@@ -6,7 +6,6 @@ import { TrashIcon } from "./icons/TrashIcon";
 export type CardProps = {
   children: React.ReactNode;
   meta?: React.ReactNode;
-  dense?: boolean;
   ariaLabel?: string;
   className?: string;
   onDelete?: () => void;
@@ -16,16 +15,11 @@ export type CardProps = {
 export const Card: React.FC<CardProps> = ({
   children,
   meta,
-  dense = false,
   ariaLabel,
   className = "",
   onDelete,
   deleteAriaLabel = "Eliminar",
 }) => {
-  const padding = dense ? "p-3" : "p-4";
-  const textSize = dense ? "text-sm" : "text-base";
-  const metaSize = dense ? "text-[11px]" : "text-sm";
-
   return (
     <article
       role="article"
@@ -37,19 +31,14 @@ export const Card: React.FC<CardProps> = ({
         className
       )}
     >
-      <div className={cx(padding, "pr-12")}>
+      <div className={"p-4 pr-12"}>
         <div
-          className={cx(
-            "whitespace-pre-wrap break-words text-zinc-900",
-            textSize
-          )}
+          className={"whitespace-pre-wrap break-words text-zinc-900 text-base"}
         >
           {children}
         </div>
 
-        {meta && (
-          <div className={cx("mt-2 text-zinc-500", metaSize)}>{meta}</div>
-        )}
+        {meta && <div className={"mt-2 text-zinc-500 text-sm"}>{meta}</div>}
       </div>
 
       {onDelete && (
@@ -57,7 +46,6 @@ export const Card: React.FC<CardProps> = ({
           <IconButton
             ariaLabel={deleteAriaLabel}
             onClick={onDelete}
-            dense={dense}
             title={deleteAriaLabel}
           >
             <TrashIcon className="w-4 h-4" />

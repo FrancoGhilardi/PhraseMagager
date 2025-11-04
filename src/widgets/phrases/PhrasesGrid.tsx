@@ -2,6 +2,9 @@ import React from "react";
 import Card from "@shared/ui/Card";
 import { cx } from "@shared/lib/cx";
 import { formatCreatedAt } from "./utils/utils";
+import EmptyState from "@shared/ui/EmptyState";
+import { DefaultEmptyIcon } from "@shared/ui/icons/DefaultEmptyIcon";
+import { SearchOffIcon } from "@shared/ui/icons/SearchOffIcon";
 
 export type PhrasesGridItem = {
   id: string;
@@ -11,7 +14,6 @@ export type PhrasesGridItem = {
 
 export type PhrasesGridProps = {
   items: PhrasesGridItem[];
-  dense?: boolean;
   className?: string;
   showCount?: boolean;
   isFiltered?: boolean;
@@ -20,29 +22,8 @@ export type PhrasesGridProps = {
   onDelete?: (id: string) => void;
 };
 
-const defaultEmpty = (
-  <div className="text-center py-12">
-    <p className="text-sm text-zinc-500 dark:text-zinc-400">
-      Aún no hay frases.
-    </p>
-    <p className="text-xs text-zinc-400 dark:text-zinc-500 mt-1">
-      Empieza añadiendo una nueva frase arriba.
-    </p>
-  </div>
-);
-
-const defaultNoResults = (
-  <div className="text-center py-12">
-    <p className="text-sm text-zinc-500 dark:text-zinc-400">Sin resultados.</p>
-    <p className="text-xs text-zinc-400 dark:text-zinc-500 mt-1">
-      Prueba con otro término de búsqueda.
-    </p>
-  </div>
-);
-
 export const PhrasesGrid: React.FC<PhrasesGridProps> = ({
   items,
-  dense = false,
   className = "",
   showCount = true,
   isFiltered = false,
@@ -52,7 +33,7 @@ export const PhrasesGrid: React.FC<PhrasesGridProps> = ({
 }) => {
   const count = items.length;
 
-  if (count === 0) {
+  if (!count) {
     return (
       <section
         aria-label="Listado de frases"
@@ -65,8 +46,22 @@ export const PhrasesGrid: React.FC<PhrasesGridProps> = ({
         )}
 
         {isFiltered
-          ? noResultsMessage ?? defaultNoResults
-          : emptyMessage ?? defaultEmpty}
+          ? noResultsMessage ?? (
+              <EmptyState
+                title="Sin resultados."
+                description="Probá con otro término de búsqueda."
+                icon={<SearchOffIcon />}
+                className="py-10 md:py-12"
+              />
+            )
+          : emptyMessage ?? (
+              <EmptyState
+                title="Aún no hay frases."
+                description="Empieza añadiendo una nueva frase arriba."
+                icon={<DefaultEmptyIcon />}
+                className="py-10 md:py-12"
+              />
+            )}
       </section>
     );
   }
@@ -96,7 +91,6 @@ export const PhrasesGrid: React.FC<PhrasesGridProps> = ({
           return (
             <div role="gridcell" key={item.id}>
               <Card
-                dense={dense}
                 meta={meta}
                 ariaLabel={`Frase ${item.id}`}
                 onDelete={onDelete ? () => onDelete(item.id) : undefined}

@@ -6,7 +6,6 @@ export type SearchInputProps = {
   value?: string;
   defaultValue?: string;
   onChange?: (value: string) => void;
-  dense?: boolean;
   className?: string;
   autoFocus?: boolean;
   id?: string;
@@ -17,7 +16,6 @@ export const SearchInput: React.FC<SearchInputProps> = ({
   value,
   defaultValue = "",
   onChange,
-  dense = false,
   className = "",
   autoFocus = false,
   id,
@@ -42,7 +40,6 @@ export const SearchInput: React.FC<SearchInputProps> = ({
         onChange={handleOnChange}
         placeholder="Frases de búsqueda..."
         ariaLabel="Buscar frases"
-        dense={dense}
         autoFocus={autoFocus}
         leftAdornment={<SearchIcon className="w-4 h-4 text-zinc-400" />}
       />
