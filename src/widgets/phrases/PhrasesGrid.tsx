@@ -5,6 +5,8 @@ import { formatCreatedAt } from "./utils/utils";
 import EmptyState from "@shared/ui/EmptyState";
 import { DefaultEmptyIcon } from "@shared/ui/icons/DefaultEmptyIcon";
 import { SearchOffIcon } from "@shared/ui/icons/SearchOffIcon";
+import Loading from "@shared/ui/Loading";
+import RetryError from "@shared/ui/RetryError";
 
 export type PhrasesGridItem = {
   id: string;
@@ -20,6 +22,11 @@ export type PhrasesGridProps = {
   emptyMessage?: React.ReactNode;
   noResultsMessage?: React.ReactNode;
   onDelete?: (id: string) => void;
+  loading?: boolean;
+  isError?: boolean;
+  error?: string;
+  onDismiss?: () => void;
+  onRetry?: () => void;
 };
 
 export const PhrasesGrid: React.FC<PhrasesGridProps> = ({
@@ -30,12 +37,24 @@ export const PhrasesGrid: React.FC<PhrasesGridProps> = ({
   emptyMessage,
   noResultsMessage,
   onDelete,
+  loading = false,
+  isError = false,
+  error = "",
+  onDismiss,
+  onRetry,
 }) => {
   const count = items.length;
 
   const headerText = useMemo<string>(() => {
     return `${count} ${count === 1 ? "frase" : "frases"} en total`;
   }, [count]);
+
+  if (loading) return <Loading text="Cargando frases…" />;
+
+  if (!loading && isError)
+    return (
+      <RetryError message={error} onDismiss={onDismiss} onRetry={onRetry} />
+    );
 
   if (!count) {
     return (
@@ -124,4 +143,4 @@ const GridCard = memo(function GridCard({
   );
 });
 
-export default PhrasesGrid;
+export default memo(PhrasesGrid);
