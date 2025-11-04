@@ -1,19 +1,11 @@
-import { cx } from "@shared/lib/cx";
 import React, { memo } from "react";
+import { cx } from "@shared/lib/cx";
 
 export type AppHeaderProps = {
-  rightSlot?: React.ReactNode;
   className?: string;
 };
 
-/**
- * Application header.
- *
- * Semantics:
- * - Uses <header role="banner"> for accessibility.
- * - Keeps layout responsive with a centered content container.
- */
-const AppHeader: React.FC<AppHeaderProps> = ({ rightSlot, className }) => {
+const AppHeader: React.FC<AppHeaderProps> = ({ className }) => {
   return (
     <header
       role="banner"
@@ -32,7 +24,6 @@ const AppHeader: React.FC<AppHeaderProps> = ({ rightSlot, className }) => {
               Recopila y organiza tus frases favoritas.
             </p>
           </div>
-          {rightSlot && <div className="flex items-center">{rightSlot}</div>}
         </div>
       </div>
     </header>
