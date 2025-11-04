@@ -1,5 +1,5 @@
 import { cx } from "@shared/lib/cx";
-import React from "react";
+import React, { memo } from "react";
 import { IconButton } from "./ButtonIcon";
 import { TrashIcon } from "./icons/TrashIcon";
 
@@ -56,4 +56,4 @@ export const Card: React.FC<CardProps> = ({
   );
 };
 
-export default Card;
+export default memo(Card);

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { memo, useMemo } from "react";
 import Card from "@shared/ui/Card";
 import { cx } from "@shared/lib/cx";
 import { formatCreatedAt } from "./utils/utils";
@@ -33,6 +33,10 @@ export const PhrasesGrid: React.FC<PhrasesGridProps> = ({
 }) => {
   const count = items.length;
 
+  const headerText = useMemo<string>(() => {
+    return `${count} ${count === 1 ? "frase" : "frases"} en total`;
+  }, [count]);
+
   if (!count) {
     return (
       <section
@@ -40,7 +44,7 @@ export const PhrasesGrid: React.FC<PhrasesGridProps> = ({
         className={cx("w-full", className)}
       >
         {showCount && (
-          <div className="mb-3 md:mb-4 text-xs text-zinc-500 dark:text-zinc-400">
+          <div className="mb-3 md:mb-4 text-xs text-zinc-500">
             0 frases en total
           </div>
         )}
@@ -57,7 +61,7 @@ export const PhrasesGrid: React.FC<PhrasesGridProps> = ({
           : emptyMessage ?? (
               <EmptyState
                 title="Aún no hay frases."
-                description="Empieza añadiendo una nueva frase arriba."
+                description="Empezá agregando una nueva frase arriba."
                 icon={<DefaultEmptyIcon />}
                 className="py-10 md:py-12"
               />
@@ -69,41 +73,55 @@ export const PhrasesGrid: React.FC<PhrasesGridProps> = ({
   return (
     <section aria-label="Listado de frases" className={cx("w-full", className)}>
       {showCount && (
-        <div className="mb-3 md:mb-4 text-xs text-zinc-500 dark:text-zinc-400">
-          {count} {count === 1 ? "phrase" : "phrases"} total
-        </div>
+        <div className="mb-3 md:mb-4 text-xs text-zinc-500">{headerText}</div>
       )}
 
       <div
         role="grid"
         aria-live="polite"
-        className={cx(
-          "grid gap-3 md:gap-4",
-          "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
-        )}
+        className={
+          "grid gap-3 md:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+        }
       >
-        {items.map((item) => {
-          const meta =
-            item.createdAt != null
-              ? formatCreatedAt(item.createdAt)
-              : undefined;
-
-          return (
-            <div role="gridcell" key={item.id}>
-              <Card
-                meta={meta}
-                ariaLabel={`Frase ${item.id}`}
-                onDelete={onDelete ? () => onDelete(item.id) : undefined}
-                deleteAriaLabel="Eliminar frase"
-              >
-                {item.text}
-              </Card>
-            </div>
-          );
-        })}
+        {items.map((item) => (
+          <div role="gridcell" key={item.id}>
+            <GridCard item={item} onDelete={onDelete} />
+          </div>
+        ))}
       </div>
     </section>
   );
 };
+
+const GridCard = memo(function GridCard({
+  item,
+  onDelete,
+}: {
+  item: PhrasesGridItem;
+  onDelete?: (id: string) => void;
+}) {
+  const createdAt =
+    typeof item.createdAt === "number"
+      ? item.createdAt
+      : typeof item.createdAt === "string"
+      ? Number(item.createdAt)
+      : undefined;
+
+  const meta =
+    createdAt != null && Number.isFinite(createdAt)
+      ? formatCreatedAt(createdAt)
+      : undefined;
+
+  return (
+    <Card
+      meta={meta}
+      ariaLabel={`Frase ${item.id}`}
+      onDelete={onDelete ? () => onDelete(item.id) : undefined}
+      deleteAriaLabel="Eliminar frase"
+    >
+      {item.text}
+    </Card>
+  );
+});
 
 export default PhrasesGrid;

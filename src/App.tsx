@@ -1,12 +1,15 @@
 import React from "react";
 import RootLayout from "@app/layouts/RootLayout";
 import Home from "@pages/Home";
+import AppProviders from "@app/providers/AppProviders";
 
 const App: React.FC = () => {
   return (
-    <RootLayout>
-      <Home />
-    </RootLayout>
+    <AppProviders>
+      <RootLayout>
+        <Home />
+      </RootLayout>
+    </AppProviders>
   );
 };
 

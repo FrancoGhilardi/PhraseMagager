@@ -1,66 +1,48 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect } from "react";
 import InputsSection from "@widgets/inputs/InputsSection";
-import PhrasesGrid, {
-  type PhrasesGridItem,
-} from "@widgets/phrases/PhrasesGrid";
-
-/**
- * Datos de ejemplo para la maquetación.
- */
-const INITIAL_ITEMS: PhrasesGridItem[] = [
-  {
-    id: "1",
-    text: "La práctica hace al maestro.",
-    createdAt: Date.now() - 60 * 60 * 1000,
-  },
-  {
-    id: "2",
-    text: "Más vale tarde que nunca.",
-    createdAt: Date.now() - 24 * 60 * 60 * 1000,
-  },
-  {
-    id: "3",
-    text: "El que no arriesga, no gana.",
-    createdAt: Date.now() - 2 * 24 * 60 * 60 * 1000,
-  },
-  {
-    id: "4",
-    text: "A mal tiempo, buena cara.",
-    createdAt: Date.now() - 30 * 60 * 1000,
-  },
-  {
-    id: "5",
-    text: "No dejes para mañana lo que puedes hacer hoy.",
-    createdAt: Date.now() - 5 * 60 * 1000,
-  },
-];
+import PhrasesGrid from "@widgets/phrases/PhrasesGrid";
+import { usePhrasesFacade } from "@features/phrases/usecases/usePhrasesFacade";
+import Loading from "@shared/ui/Loading";
+import RetryError from "@shared/ui/RetryError";
 
 export const Home: React.FC = () => {
-  const [search, setSearch] = useState<string>("");
+  const {
+    filteredItems,
+    isFiltered,
+    query,
+    error,
+    flags,
+    load,
+    updateQuery,
+    removeById,
+    dismissError,
+  } = usePhrasesFacade();
 
-  // Filtrado básico solo para visualizar el estado "no results".
-  const filteredItems = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    if (!q) return INITIAL_ITEMS;
-    return INITIAL_ITEMS.filter((it) => it.text.toLowerCase().includes(q));
-  }, [search]);
+  useEffect(() => {
+    if (flags.isIdle) load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [flags.isIdle]);
 
   return (
     <main role="main" aria-label="Contenido principal">
       <div className="container mx-auto max-w-5xl px-4 py-6 md:py-8">
-        {/* Controles principales (Add + Search) */}
         <InputsSection
-          onSearchChange={setSearch}
-          searchValue={search}
+          onSearchChange={updateQuery}
+          searchValue={query}
           addAutoFocus={false}
           searchAutoFocus={false}
           className="mb-4 md:mb-6"
         />
+        {flags.isLoading && <Loading text="Cargando frases…" />}
+
+        {flags.isError && error && (
+          <RetryError message={error} onDismiss={dismissError} onRetry={load} />
+        )}
 
         <PhrasesGrid
           items={filteredItems}
-          isFiltered={search.trim().length > 0}
-          className=""
+          isFiltered={isFiltered}
+          onDelete={removeById}
         />
       </div>
     </main>
