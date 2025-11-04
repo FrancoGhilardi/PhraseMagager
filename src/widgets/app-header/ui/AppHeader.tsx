@@ -1,5 +1,5 @@
+import { cx } from "@shared/lib/cx";
 import React, { memo } from "react";
-import cx from "@shared/lib/cx";
 
 export type AppHeaderProps = {
   rightSlot?: React.ReactNode;
