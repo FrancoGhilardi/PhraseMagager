@@ -59,8 +59,4 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
   );
 };
 
-/**
- * Ícono sugerido para “sin resultados” (lupa con tachado).
- */
-
 export default EmptyState;
