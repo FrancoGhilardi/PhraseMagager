@@ -1,6 +1,8 @@
+import { useState } from "react";
 import { Provider } from "react-redux";
 import { configureStore } from "@reduxjs/toolkit";
 import { render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { vi, describe, it, expect, beforeEach } from "vitest";
 import phrasesReducer, { setQuery } from "@app/store/slices/phrasesSlice";
 import { usePhrasesFacade } from "@features/phrases/usecases/usePhrasesFacade";
@@ -20,6 +22,14 @@ const FIXTURES = [
   { id: "3", text: "Holístico enfoque", createdAt: 15 },
 ];
 
+// Mezcla para cubrir nextIdFrom
+const SEEDS_MIXED = [
+  { id: "xyz", text: "X", createdAt: 1 },
+  { id: "10", text: "T", createdAt: 2 },
+  { id: "2", text: "B", createdAt: 3 },
+  { id: "5a", text: "C", createdAt: 4 },
+];
+
 function FacadeHarness() {
   const { status, items, counts, isFiltered } = usePhrasesFacade();
   return (
@@ -29,6 +39,89 @@ function FacadeHarness() {
       <output data-testid="filtered">{counts.filtered}</output>
       <output data-testid="isFiltered">{String(isFiltered)}</output>
       <output data-testid="ids">{items.map((i) => i.id).join(",")}</output>
+    </div>
+  );
+}
+
+// Harness con acciones para ejercitar early returns / nextIdFrom
+function FacadeActionsHarness() {
+  const f = usePhrasesFacade();
+  return (
+    <div>
+      <output data-testid="status">{f.status}</output>
+      <output data-testid="ids">{f.items.map((i) => i.id).join(",")}</output>
+      <button
+        type="button"
+        data-testid="btn-update-same"
+        onClick={() => f.updateQuery(f.query)}
+      >
+        update-same
+      </button>
+      <button
+        type="button"
+        data-testid="btn-reset"
+        onClick={() => f.resetQuery()}
+      >
+        reset
+      </button>
+      <button
+        type="button"
+        data-testid="btn-add-empty"
+        onClick={() => f.addPhrase("   ")}
+      >
+        add-empty
+      </button>
+      <button
+        type="button"
+        data-testid="btn-add-valid"
+        onClick={() => f.addPhrase("Nueva frase")}
+      >
+        add-valid
+      </button>
+      <button
+        type="button"
+        data-testid="btn-remove-empty"
+        onClick={() => f.removeById("   ")}
+      >
+        remove-empty
+      </button>
+      <button
+        type="button"
+        data-testid="btn-dismiss"
+        onClick={() => f.dismissError()}
+      >
+        dismiss
+      </button>
+    </div>
+  );
+}
+
+// Harness imperativo para verificar retorno de addPhrase(null/empty)
+function FacadeResultHarness() {
+  const f = usePhrasesFacade();
+  const [result, setResult] = useState<any>("none");
+  return (
+    <div>
+      <output data-testid="ids">{f.items.map((i) => i.id).join(",")}</output>
+      <output data-testid="add-result">{String(result)}</output>
+      <button
+        data-testid="add-empty-call"
+        onClick={() => setResult(f.addPhrase("   "))}
+      >
+        add-empty-call
+      </button>
+      <button
+        data-testid="remove-empty-call"
+        onClick={() => f.removeById("   ")}
+      >
+        remove-empty-call
+      </button>
+      <button
+        data-testid="update-same-call"
+        onClick={() => f.updateQuery(f.query)}
+      >
+        update-same-call
+      </button>
     </div>
   );
 }
@@ -59,21 +152,15 @@ describe("features/usePhrasesFacade", () => {
       </Provider>
     );
 
-    // Debe pasar a pending y luego a succeeded con datos cargados
     await waitFor(() =>
       expect(["pending", "succeeded"]).toContain(getText("status"))
     );
     await waitFor(() => expect(getText("status")).toBe("succeeded"));
 
-    // Verificaciones de datos
     expect(getText("total")).toBe(String(FIXTURES.length));
     expect(getText("filtered")).toBe(String(FIXTURES.length));
     expect(getText("isFiltered")).toBe("false");
-
-    // No debe haber loops
     expect(listMock).toHaveBeenCalledTimes(1);
-
-    // Los IDs deben reflejar orden por createdAt desc (2,3,1)
     expect(getText("ids")).toBe("2,3,1");
   });
 
@@ -88,21 +175,15 @@ describe("features/usePhrasesFacade", () => {
       </Provider>
     );
 
-    // Esperar data cargada
     await waitFor(() => expect(getText("status")).toBe("succeeded"));
     expect(listMock).toHaveBeenCalledTimes(1);
 
-    // Cambiar query desde afuera
     store.dispatch(setQuery("hol"));
 
-    // Ahora debe estar filtrado y la cantidad debe coincidir con los que contienen "hol"
     await waitFor(() => expect(getText("isFiltered")).toBe("true"));
     expect(getText("filtered")).toBe("2");
-
-    // Asegura que no se disparó otra llamada remota
     expect(listMock).toHaveBeenCalledTimes(1);
 
-    // Cambios de query adicionales tampoco deben disparar fetch
     store.dispatch(setQuery("xyz"));
     await waitFor(() => expect(getText("filtered")).toBe("0"));
     expect(listMock).toHaveBeenCalledTimes(1);
@@ -122,7 +203,6 @@ describe("features/usePhrasesFacade", () => {
     await waitFor(() => expect(getText("status")).toBe("succeeded"));
     expect(listMock).toHaveBeenCalledTimes(1);
 
-    // Forzar varios re-renderes del árbol
     rerender(
       <Provider store={store}>
         <FacadeHarness />
@@ -134,7 +214,95 @@ describe("features/usePhrasesFacade", () => {
       </Provider>
     );
 
-    // Sigue siendo una sola llamada
     expect(listMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("cubre early returns y generación de IDs incrementales", async () => {
+    const user = userEvent.setup();
+    listMock.mockResolvedValueOnce(SEEDS_MIXED);
+
+    const store = makeStore();
+
+    render(
+      <Provider store={store}>
+        <FacadeActionsHarness />
+      </Provider>
+    );
+
+    await waitFor(() => expect(getText("status")).toBe("succeeded"));
+    const beforeIds = getText("ids");
+
+    // updateQuery con el mismo valor
+    await user.click(screen.getByTestId("btn-update-same"));
+
+    // resetQuery con query vacío
+    await user.click(screen.getByTestId("btn-reset"));
+
+    // addPhrase con texto vacío
+    await user.click(screen.getByTestId("btn-add-empty"));
+    expect(getText("ids")).toBe(beforeIds);
+
+    // addPhrase válido
+    await user.click(screen.getByTestId("btn-add-valid"));
+    const idsAfterAdd = getText("ids").split(",").filter(Boolean);
+    expect(idsAfterAdd).toContain("11");
+
+    // removeById con id vacío
+    await user.click(screen.getByTestId("btn-remove-empty"));
+
+    // dismissError con error nulo
+    await user.click(screen.getByTestId("btn-dismiss"));
+  });
+
+  it("cancela la petición en curso", async () => {
+    let aborted = false;
+    listMock.mockImplementationOnce((params?: { signal?: AbortSignal }) => {
+      params?.signal?.addEventListener("abort", () => {
+        aborted = true;
+      });
+      return new Promise(() => {});
+    });
+
+    const store = makeStore();
+
+    const { unmount } = render(
+      <Provider store={store}>
+        <FacadeHarness />
+      </Provider>
+    );
+
+    // Debe entrar en pending
+    await waitFor(() => {
+      expect(["pending", "succeeded"]).toContain(getText("status"));
+      expect(getText("status")).toBe("pending");
+    });
+
+    // Al desmontar debe disparar abort sobre la señal
+    unmount();
+    expect(aborted).toBe(true);
+  });
+
+  it("addPhrase('   ') retorna null y removeById('   ') no altera items", async () => {
+    const user = userEvent.setup();
+    listMock.mockResolvedValueOnce([]);
+
+    const store = makeStore();
+
+    render(
+      <Provider store={store}>
+        <FacadeResultHarness />
+      </Provider>
+    );
+
+    const beforeIds = getText("ids");
+    await user.click(screen.getByTestId("add-empty-call"));
+    expect(screen.getByTestId("add-result").textContent).toBe("null");
+    expect(getText("ids")).toBe(beforeIds);
+
+    await user.click(screen.getByTestId("remove-empty-call"));
+    expect(getText("ids")).toBe(beforeIds);
+
+    // updateQuery con el mismo valor
+    await user.click(screen.getByTestId("update-same-call"));
   });
 });
