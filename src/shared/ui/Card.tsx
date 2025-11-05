@@ -26,15 +26,13 @@ export const Card: React.FC<CardProps> = ({
       aria-label={ariaLabel}
       className={cx(
         "relative w-full rounded-2xl border",
-        "border-zinc-200/80 bg-white/95",
+        "border-zinc-200/80 bg-white/95 hover:bg-blue-100",
         "shadow-sm hover:shadow-md transition-shadow",
         className
       )}
     >
       <div className={"p-4 pr-12"}>
-        <div
-          className={"whitespace-pre-wrap break-words text-zinc-900 text-base"}
-        >
+        <div className={"whitespace-pre-wrap text-zinc-900 text-base"}>
           {children}
         </div>
 

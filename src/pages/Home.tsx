@@ -22,7 +22,6 @@ export const Home: React.FC = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [flags.isIdle]);
-  console.log({ flags });
   return (
     <main role="main" aria-label="Contenido principal">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -40,7 +39,7 @@ export const Home: React.FC = () => {
           onDelete={removeById}
           loading={flags.isLoading || !flags.isLoaded}
           isError={flags.isError}
-          error={error}
+          error={error ?? ""}
           onDismiss={dismissError}
           onRetry={load}
         />
