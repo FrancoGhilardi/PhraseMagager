@@ -14,7 +14,7 @@ export type PhrasesState = {
   items: Phrase[];
   query: string;
   status: "idle" | "pending" | "succeeded" | "failed";
-  error?: string;
+  error?: string | null;
 };
 
 export type WithPhrasesSlice = {
@@ -25,7 +25,7 @@ const initialState: PhrasesState = {
   items: [],
   query: "",
   status: "idle",
-  error: undefined,
+  error: null,
 };
 
 /**
@@ -128,18 +128,18 @@ const phrasesSlice = createSlice({
      * Limpia errores transitorios.
      */
     clearError(state) {
-      state.error = undefined;
+      state.error = null;
     },
   },
   extraReducers: (builder) => {
     builder
       .addCase(fetchPhrases.pending, (state) => {
         state.status = "pending";
-        state.error = undefined;
+        state.error = null;
       })
       .addCase(fetchPhrases.fulfilled, (state, action) => {
         state.status = "succeeded";
-        state.error = undefined;
+        state.error = null;
         state.items = action.payload;
       })
       .addCase(fetchPhrases.rejected, (state, action) => {
@@ -170,22 +170,25 @@ export const selectPhrasesState = (state: WithPhrasesSlice) => state.phrases;
 /**
  * Devuelve el término de búsqueda actual.
  */
-export const selectQuery = createSelector(selectPhrasesState, (s) => s.query);
+export const selectQuery = createSelector(
+  selectPhrasesState,
+  (select) => select.query
+);
 
 /**
- * Devuelve la lista completa de items del store.
+ * Devuelve todos los items ordenados por `createdAt` desc.
  */
-export const selectAllItems = createSelector(
-  selectPhrasesState,
-  (s) => s.items
-);
+export const selectAllItems = createSelector(selectPhrasesState, (select) => {
+  if (select.items.length <= 1) return select.items;
+  return [...select.items].sort(compareByCreatedAtDesc);
+});
 
 /**
  * Indica si hay búsqueda activa.
  */
 export const selectIsFiltered = createSelector(
   selectQuery,
-  (q) => norm(q).length > 0
+  (query) => norm(query).length > 0
 );
 
 /**
