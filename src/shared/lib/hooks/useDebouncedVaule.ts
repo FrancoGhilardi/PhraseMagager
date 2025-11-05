@@ -35,6 +35,7 @@ export function useDebouncedValue<T>(
   const maxTimeoutRef = useRef<number | null>(null);
   const latestRef = useRef<T>(value);
 
+  // Mantener referencia al último valor recibido
   useEffect(() => {
     latestRef.current = value;
   }, [value]);
@@ -64,7 +65,12 @@ export function useDebouncedValue<T>(
       cancel();
       return;
     }
-
+    // Solo aplicar debounce cuando el valor cambia respecto del último `debounced`.
+    const hasChanged = !Object.is(value, debounced);
+    if (!hasChanged) {
+      cancel();
+      return;
+    }
     setIsDebouncing(true);
 
     clearTimer(timeoutRef);
@@ -84,8 +90,7 @@ export function useDebouncedValue<T>(
     return () => {
       clearTimer(timeoutRef);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [value, delay, enabled, maxWait]);
+  }, [value, delay, enabled, maxWait, debounced, cancel, flush]);
 
   return useMemo(
     () => ({ value: debounced, isDebouncing, flush, cancel }),
