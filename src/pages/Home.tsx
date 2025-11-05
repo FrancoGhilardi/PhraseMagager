@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
-import InputsSection from "@widgets/inputs/InputsSection";
-import PhrasesGrid from "@widgets/phrases/PhrasesGrid";
 import { usePhrasesFacade } from "@features/phrases/usecases/usePhrasesFacade";
+import PhrasesGridWithBoundary from "@widgets/phrases/PhrasesGrid.boundary";
+import InputsSectionWithBoundary from "@widgets/inputs/InputSection.boundary";
 
 export const Home: React.FC = () => {
   const {
@@ -25,7 +25,7 @@ export const Home: React.FC = () => {
   return (
     <main role="main" aria-label="Contenido principal">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <InputsSection
+        <InputsSectionWithBoundary
           onSearchChange={updateQuery}
           searchValue={query}
           addAutoFocus={false}
@@ -33,7 +33,7 @@ export const Home: React.FC = () => {
           className="mb-4 md:mb-6"
         />
 
-        <PhrasesGrid
+        <PhrasesGridWithBoundary
           items={filteredItems}
           isFiltered={isFiltered}
           onDelete={removeById}

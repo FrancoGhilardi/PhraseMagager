@@ -47,10 +47,6 @@ describe("toPhrase", () => {
   });
 });
 
-// -----------------------------------------------------------------------------
-// toPhraseListFromResponse
-// -----------------------------------------------------------------------------
-
 describe("toPhraseListFromResponse", () => {
   it("retorna [] si el payload no es objeto o si `phrases` no es array", () => {
     expect(toPhraseListFromResponse(null)).toEqual([]);
