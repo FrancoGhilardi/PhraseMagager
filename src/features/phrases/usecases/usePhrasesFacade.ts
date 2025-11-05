@@ -56,6 +56,19 @@ export function usePhrasesFacade() {
   useEffect(() => cancelLoad, [cancelLoad]);
 
   /**
+   * - Evita loops usando una marca local.
+   * - Solo dispara si el estado está `idle` (estado inicial típico).
+   */
+  const didInitRef = useRef<boolean>(false);
+  useEffect(() => {
+    if (didInitRef.current) return;
+    didInitRef.current = true;
+    if (status === "idle") {
+      load();
+    }
+  }, [status, load]);
+
+  /**
    * Actualiza el término de búsqueda..
    * @param value Nuevo valor de la consulta.
    */
