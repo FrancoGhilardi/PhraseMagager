@@ -12,15 +12,15 @@ export type Phrase = {
 export function isPhrase(value: unknown): value is Phrase {
   if (value == null || typeof value !== "object") return false;
 
-  const v = value as Record<string, unknown>;
-  const hasId = typeof v.id === "string" && v.id.trim().length > 0;
-  const hasText = typeof v.text === "string" && v.text.trim().length > 0;
+  const val = value as Record<string, unknown>;
+  const hasId = typeof val.id === "string" && val.id.trim().length > 0;
+  const hasText = typeof val.text === "string" && val.text.trim().length > 0;
 
   const created =
-    typeof v.createdAt === "number"
-      ? v.createdAt
-      : typeof v.createdAt === "string"
-      ? Number(v.createdAt)
+    typeof val.createdAt === "number"
+      ? val.createdAt
+      : typeof val.createdAt === "string"
+      ? Number(val.createdAt)
       : NaN;
 
   if (!hasId || !hasText) return false;
@@ -74,9 +74,9 @@ export function compareByCreatedAtDesc(a: Phrase, b: Phrase): number {
 
 /**
  * guard para objetos planos.
- * @param v Valor desconocido.
+ * @param value Valor desconocido.
  * @returns `true` si parece un objeto no nulo; `false` en caso contrario.
  */
-function isLikelyObject(v: unknown): v is Record<string, unknown> {
-  return typeof v === "object" && v !== null;
+function isLikelyObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
 }

@@ -71,10 +71,10 @@ function isAbortLike(err: unknown): boolean {
  * @returns Error con `name = "AbortError"`.
  */
 function createAbortError(cause?: unknown): Error {
-  const e = new Error("Operación cancelada por el solicitante.");
-  e.name = "AbortError";
-  if (cause) e.cause = cause;
-  return e;
+  const error = new Error("Operación cancelada por el solicitante.");
+  error.name = "AbortError";
+  if (cause) error.cause = cause;
+  return error;
 }
 
 /**

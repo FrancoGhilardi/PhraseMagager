@@ -23,8 +23,8 @@ export const AddPhraseForm: React.FC<AddPhraseFormProps> = ({
   const [text, setText] = useState<string>("");
   const inputRef = useRef<HTMLInputElement | null>(null);
 
-  const handleSubmit = (e: FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = (event: FormEvent) => {
+    event.preventDefault();
     const clean = text.trim();
     if (!clean) return;
     if (onSubmit) {

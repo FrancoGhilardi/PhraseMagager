@@ -52,15 +52,15 @@ export const fetchPhrases = createAsyncThunk<
 });
 
 /**
- * Utilidad interna: normaliza cadenas para búsqueda:
+ * normaliza cadenas para búsqueda:
  * - trim
  * - toLowerCase
  * - remoción de acentos/diacríticos
- * @param s Cadena de entrada.
+ * @param text Cadena de entrada.
  * @returns Cadena normalizada.
  */
-function norm(s: string): string {
-  return s
+function norm(text: string): string {
+  return text
     .trim()
     .toLowerCase()
     .normalize("NFD")
@@ -88,7 +88,7 @@ const phrasesSlice = createSlice({
       const phrase = action.payload;
       if (!phrase?.id) return;
 
-      const exists = state.items.some((p) => p.id === phrase.id);
+      const exists = state.items.some((item) => item.id === phrase.id);
       if (exists) return;
 
       state.items.push(phrase);
@@ -104,7 +104,7 @@ const phrasesSlice = createSlice({
       if (!id) return;
 
       const prevLen = state.items.length;
-      state.items = state.items.filter((p) => p.id !== id);
+      state.items = state.items.filter((item) => item.id !== id);
 
       if (state.items.length === prevLen) return;
     },
