@@ -10,6 +10,8 @@ export type CardProps = {
   className?: string;
   onDelete?: () => void;
   deleteAriaLabel?: string;
+  enableClamp?: boolean;
+  clampLines?: number;
 };
 
 export const Card: React.FC<CardProps> = ({
@@ -19,7 +21,18 @@ export const Card: React.FC<CardProps> = ({
   className = "",
   onDelete,
   deleteAriaLabel = "Eliminar",
+  enableClamp = true,
+  clampLines = 4,
 }) => {
+  const clampStyle = enableClamp
+    ? ({
+        display: "-webkit-box",
+        WebkitBoxOrient: "vertical",
+        WebkitLineClamp: clampLines,
+        overflow: "hidden",
+      } as const)
+    : undefined;
+
   return (
     <article
       role="article"
@@ -32,7 +45,12 @@ export const Card: React.FC<CardProps> = ({
       )}
     >
       <div className={"p-4 pr-12"}>
-        <div className={"whitespace-pre-wrap text-zinc-900 text-base"}>
+        <div
+          className={
+            "whitespace-pre-wrap break-words hyphens-auto text-zinc-900 text-base leading-relaxed"
+          }
+          style={clampStyle}
+        >
           {children}
         </div>
 

@@ -28,6 +28,29 @@ const initialState: PhrasesState = {
   error: null,
 };
 
+const MIN_QUERY_LENGTH = 2;
+
+/**
+ * Elimina solo los acentos. Mantiene las mayúsculas y minúsculas para que RegExp /i lo gestione.
+ */
+function stripDiacritics(text: string): string {
+  return text.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+}
+
+/**
+ * Recortar y colapsar los espacios en blanco internos
+ */
+function sanitizeQuery(raw: string): string {
+  return raw.replace(/\s+/g, " ").trim();
+}
+
+/**
+ * Escapa una cadena para que se utilice como literal seguro dentro de una expresión regular.
+ */
+function escapeRegExp(literal: string): string {
+  return literal.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
 /**
  * Obtiene frases desde la API remota.
  * Usa `thunkAPI.signal` para soportar cancelación.
@@ -50,22 +73,6 @@ export const fetchPhrases = createAsyncThunk<
     return thunkAPI.rejectWithValue(message);
   }
 });
-
-/**
- * normaliza cadenas para búsqueda:
- * - trim
- * - toLowerCase
- * - remoción de acentos/diacríticos
- * @param text Cadena de entrada.
- * @returns Cadena normalizada.
- */
-function norm(text: string): string {
-  return text
-    .trim()
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "");
-}
 
 const phrasesSlice = createSlice({
   name: "phrases",
@@ -186,21 +193,26 @@ export const selectAllItems = createSelector(selectPhrasesState, (select) => {
 /**
  * Indica si hay búsqueda activa.
  */
-export const selectIsFiltered = createSelector(
-  selectQuery,
-  (query) => norm(query).length > 0
-);
+export const selectIsFiltered = createSelector(selectQuery, (query) => {
+  const sanitized = sanitizeQuery(query);
+  return sanitized.length >= MIN_QUERY_LENGTH;
+});
 
 /**
- * Items filtrados en vivo por `query`.
+ * Items filtrados por `query`, con:
+ * - sanitización
+ * - minLength
+ * - RegExp escapada y memoizada en el selector
+ * - comparación case-insensitive y sin acentos
  */
 export const selectFilteredItems = createSelector(
   [selectAllItems, selectQuery],
   (items, query) => {
-    const q = norm(query);
-    if (q.length === 0) return items;
-
-    return items.filter((p) => norm(p.text).includes(q));
+    const sanitized = sanitizeQuery(query);
+    if (sanitized.length < MIN_QUERY_LENGTH) return items;
+    const safeLiteral = escapeRegExp(stripDiacritics(sanitized));
+    const pattern = new RegExp(safeLiteral, "i");
+    return items.filter((p) => pattern.test(stripDiacritics(p.text)));
   }
 );
 

@@ -11,6 +11,7 @@ export type InputsSectionProps = {
   onAddSubmit?: (text: string) => void;
   addAutoFocus?: boolean;
   searchAutoFocus?: boolean;
+  searchDebounceMs?: number;
 };
 
 export const InputsSection: React.FC<InputsSectionProps> = ({
@@ -21,6 +22,7 @@ export const InputsSection: React.FC<InputsSectionProps> = ({
   onAddSubmit,
   addAutoFocus = false,
   searchAutoFocus = false,
+  searchDebounceMs = 300,
 }) => {
   return (
     <section
@@ -37,6 +39,7 @@ export const InputsSection: React.FC<InputsSectionProps> = ({
         value={searchValue}
         defaultValue={searchDefaultValue}
         onChange={onSearchChange}
+        debounceMs={searchDebounceMs}
         autoFocus={searchAutoFocus}
         className="w-full"
       />

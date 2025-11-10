@@ -28,6 +28,7 @@ export const Home: React.FC = () => {
         <InputsSectionWithBoundary
           onSearchChange={updateQuery}
           searchValue={query}
+          searchDebounceMs={300}
           addAutoFocus={false}
           searchAutoFocus={false}
           className="mb-4 md:mb-6"
