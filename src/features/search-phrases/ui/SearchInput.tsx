@@ -32,13 +32,28 @@ export const SearchInput: React.FC<SearchInputProps> = ({
 }) => {
   const isControlled = value !== undefined;
   const [inner, setInner] = useState<string>(defaultValue);
-  const rawValue = isControlled ? value! : inner;
+  const debouncedControlled = isControlled && !onChange;
+  const [draft, setDraft] = useState<string>(
+    (isControlled ? value ?? "" : defaultValue) ?? ""
+  );
+
+  useEffect(() => {
+    if (!debouncedControlled) return;
+    if (value !== draft) setDraft(value ?? "");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value, debouncedControlled]);
+
+  const sourceValue = debouncedControlled
+    ? draft
+    : isControlled
+    ? (value as string)
+    : inner;
 
   const {
     value: debounced,
     flush,
     cancel,
-  } = useDebouncedValue(rawValue, {
+  } = useDebouncedValue(sourceValue, {
     delay: debounceMs,
     enabled: debounceMs > 0,
   });
@@ -48,7 +63,6 @@ export const SearchInput: React.FC<SearchInputProps> = ({
   useEffect(() => {
     if (!onDebouncedChange) return;
     if (debounced === lastEmittedRef.current) return;
-
     lastEmittedRef.current = debounced;
     onDebouncedChange(debounced);
   }, [debounced, onDebouncedChange]);
@@ -56,9 +70,10 @@ export const SearchInput: React.FC<SearchInputProps> = ({
   const handlers = useMemo(() => {
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       const next = e.target.value;
+      if (debouncedControlled) setDraft(next);
       if (!isControlled) setInner(next);
-      if (next === rawValue && isControlled) return;
       onChange?.(next);
+
       if (debounceMs <= 0 && onDebouncedChange) {
         lastEmittedRef.current = next;
         onDebouncedChange(next);
@@ -68,12 +83,20 @@ export const SearchInput: React.FC<SearchInputProps> = ({
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
       if (e.key === "Enter") {
         flush();
+        const current = debouncedControlled
+          ? draft
+          : isControlled
+          ? (value as string)
+          : inner;
+
         if (onDebouncedChange) {
-          lastEmittedRef.current = rawValue;
-          onDebouncedChange(rawValue);
+          lastEmittedRef.current = current;
+          onDebouncedChange(current);
         }
-        onSubmit?.(rawValue);
-      } else if (e.key === "Escape") {
+        onSubmit?.(current);
+      }
+      if (e.key === "Escape") {
+        if (debouncedControlled) setDraft("");
         if (!isControlled) setInner("");
         onChange?.("");
         cancel();
@@ -86,8 +109,11 @@ export const SearchInput: React.FC<SearchInputProps> = ({
 
     return { handleChange, handleKeyDown };
   }, [
+    debouncedControlled,
     isControlled,
-    rawValue,
+    draft,
+    inner,
+    value,
     onChange,
     onDebouncedChange,
     onSubmit,
@@ -96,13 +122,19 @@ export const SearchInput: React.FC<SearchInputProps> = ({
     cancel,
   ]);
 
+  const displayValue = debouncedControlled
+    ? draft
+    : isControlled
+    ? (value as string)
+    : inner;
+
   return (
     <div className={className}>
       <Input
         id={id}
         name={name}
         type="search"
-        value={rawValue}
+        value={displayValue}
         onChange={handlers.handleChange}
         onKeyDown={handlers.handleKeyDown}
         placeholder={placeholder}

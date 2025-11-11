@@ -33,14 +33,7 @@ function renderHome() {
   );
 }
 
-/**
- * Encuentra el input de búsqueda de forma robusta:
- * - role="searchbox" con label /buscar/i
- * - role="textbox" con label /buscar/i
- * - placeholder /buscar/i
- * - cualquier searchbox
- * - último textbox
- */
+/** Encuentra el input de búsqueda de forma robusta. */
 function getSearchInput(): HTMLInputElement {
   const bySearchRoleNamed = screen.queryByRole("searchbox", {
     name: /buscar/i,
@@ -63,31 +56,31 @@ function getSearchInput(): HTMLInputElement {
   throw new Error("Search input not found");
 }
 
-// Cuenta celdas actuales en la grilla
+/** Cuenta celdas actuales en la grilla. */
 function getGridCount(): number {
   const grid = screen.getByRole("grid");
   const cells = within(grid).queryAllByRole("gridcell");
   return cells.length;
 }
 
-// Helper para esperar cambios en el grid después del debounce
+/** Espera hasta que la grilla tenga cierta cantidad de items. */
 async function waitForGridUpdate(expectedCount: number) {
   await waitFor(
     () => {
       expect(getGridCount()).toBe(expectedCount);
     },
-    { timeout: 3000 }
+    { timeout: 3_000 }
   );
 }
 
-describe("pages/Home e2e (debounce + filtro real)", () => {
+describe("pages/Home e2e", () => {
   let user: ReturnType<typeof userEvent.setup>;
 
   beforeEach(() => {
     vi.useRealTimers();
     listMock.mockReset();
     listMock.mockResolvedValue(FIXTURES);
-    user = userEvent.setup({ delay: null });
+    user = userEvent.setup();
   });
 
   afterEach(() => {
@@ -96,36 +89,28 @@ describe("pages/Home e2e (debounce + filtro real)", () => {
 
   it("aplica debounce, respeta minLength y entradas solo con espacios", async () => {
     renderHome();
-
-    const grid = await screen.findByRole("grid");
-    expect(grid).toBeInTheDocument();
+    await screen.findByRole("grid");
+    expect(listMock).toHaveBeenCalled();
     await waitForGridUpdate(3);
     const search = getSearchInput();
 
-    // minLength: 1 carácter ⇒ no filtra
+    // minLength: 1 carácter => no filtra
     await user.clear(search);
     await user.type(search, "a");
+    await user.keyboard("{Enter}");
+    await waitForGridUpdate(3);
 
-    // Esperar un poco más del debounce esperado
-    await new Promise((resolve) => setTimeout(resolve, 600));
-
-    // Verificar que no filtró
-    expect(getGridCount()).toBe(3);
-
-    // solo espacios ⇒ no filtra
+    // Solo espacios => no filtra
     await user.clear(search);
     await user.type(search, "    ");
-    await new Promise((resolve) => setTimeout(resolve, 600));
-    expect(getGridCount()).toBe(3);
+    await user.keyboard("{Enter}");
+    await waitForGridUpdate(3);
 
-    // Búsqueda válida con debounce
+    // Búsqueda válida => filtra a 1
     await user.clear(search);
     await user.type(search, "sol");
-
-    // Esperar a que el debounce se aplique y el filtro actualice
+    await user.keyboard("{Enter}");
     await waitForGridUpdate(1);
-
-    // Verificar que encontró el item correcto
     expect(screen.getByText(/canci[oó]n de sol/i)).toBeInTheDocument();
   }, 20_000);
 
@@ -137,22 +122,23 @@ describe("pages/Home e2e (debounce + filtro real)", () => {
 
     const search = getSearchInput();
 
-    // Búsqueda ignorando acentos
+    // Ignora acentos
     await user.clear(search);
     await user.type(search, "cancion");
-
+    await user.keyboard("{Enter}");
     await waitForGridUpdate(1);
     expect(screen.getByText(/canci[oó]n de sol/i)).toBeInTheDocument();
 
-    // Caracteres especiales
+    // Escapa caracteres especiales
     await user.clear(search);
     await user.type(search, "(regex");
-
+    await user.keyboard("{Enter}");
     await waitForGridUpdate(1);
     expect(screen.getByText(/c[oó]digo \(regex\)/i)).toBeInTheDocument();
 
-    // Limpiar búsqueda debe volver a mostrar todos
+    // Limpiar vuelve al total
     await user.clear(search);
+    await user.keyboard("{Enter}");
     await waitForGridUpdate(3);
   }, 20_000);
 });

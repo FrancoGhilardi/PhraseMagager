@@ -33,7 +33,7 @@ export const InputsSection: React.FC<InputsSectionProps> = ({
       <SearchInput
         value={searchValue}
         defaultValue={searchDefaultValue}
-        onChange={onSearchChange}
+        onDebouncedChange={onSearchChange}
         debounceMs={searchDebounceMs}
         autoFocus={searchAutoFocus}
         className="w-full"
