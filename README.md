@@ -76,7 +76,7 @@ src/
       http/
         axios.ts
       hooks/
-        useDebouncedVaule.ts
+        useDebouncedValue.ts
       cx.ts
     ui/
       Card.tsx
@@ -192,7 +192,7 @@ El adaptador `PhraseHttp` consulta `GET /data` sobre esa base y espera un objeto
   - Rehidratación/guardado en `localStorage` con validación de dominio.
 
 - **Rendimiento UI**
-  - Búsqueda **debounced** (`useDebouncedVaule.ts` — contiene una errata en el nombre del archivo) con `300ms` por defecto.
+  - Búsqueda **debounced** (`useDebouncedValue.ts` — contiene una errata en el nombre del archivo) con `300ms` por defecto.
   - Selectores memoizados y componentes pequeños; claves estables en listas.
 
 ---

@@ -111,5 +111,45 @@ describe("app/store/slices/phrasesSlice", () => {
       const counts = selectCounts(root);
       expect(counts.filtered).toBe(0);
     });
+    it("minLength: con 1 carácter no filtra y selectIsFiltered=false", () => {
+      const root = makeRootState({ items, query: "h" });
+      const all = selectAllItems(root);
+      const filtered = selectFilteredItems(root);
+      expect(selectIsFiltered(root)).toBe(false);
+      expect(filtered.map((p) => p.id)).toEqual(all.map((p) => p.id));
+    });
+
+    it("solo espacios: no filtra", () => {
+      const root = makeRootState({ items, query: "     " });
+      const all = selectAllItems(root);
+      const filtered = selectFilteredItems(root);
+      expect(filtered.map((p) => p.id)).toEqual(all.map((p) => p.id));
+    });
+
+    it("sanitización: colapsa múltiples espacios al filtrar", () => {
+      const root = makeRootState({ items, query: "   hola   mundo  " });
+      const filtered = selectFilteredItems(root);
+      expect(filtered.map((p) => p.id)).toEqual(["1"]);
+    });
+
+    it("acentos: 'cancion' debe encontrar 'Canción ...'", () => {
+      const withAccents = [
+        ...items,
+        { id: "10", text: "Canción de sol", createdAt: 30 },
+      ];
+      const root = makeRootState({ items: withAccents, query: "cancion" });
+      const filtered = selectFilteredItems(root);
+      expect(filtered.map((p) => p.id)).toContain("10");
+    });
+
+    it("caracteres especiales: '(regex' matchea literal y no rompe la RegExp", () => {
+      const specials = [
+        ...items,
+        { id: "20", text: "código (regex)", createdAt: 40 },
+      ];
+      const root = makeRootState({ items: specials, query: "(regex" });
+      const filtered = selectFilteredItems(root);
+      expect(filtered.map((p) => p.id)).toEqual(["20"]);
+    });
   });
 });

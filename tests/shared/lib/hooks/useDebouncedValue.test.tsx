@@ -10,7 +10,7 @@ import { vi, describe, it, expect, beforeEach, afterEach } from "vitest";
 import {
   useDebouncedValue,
   type UseDebouncedValueOptions,
-} from "@shared/lib/hooks/useDebouncedVaule";
+} from "@shared/lib/hooks/useDebouncedValue";
 
 type HarnessRef = {
   set: (v: string) => void;

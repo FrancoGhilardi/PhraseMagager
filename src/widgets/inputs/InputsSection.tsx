@@ -27,12 +27,7 @@ export const InputsSection: React.FC<InputsSectionProps> = ({
   return (
     <section
       aria-label="Controles de frases"
-      className={cx(
-        "w-full",
-        "space-y-3 md:space-y-4",
-        "print:space-y-2",
-        className
-      )}
+      className={cx("w-full space-y-3 md:space-y-4 print:space-y-2", className)}
     >
       <AddPhraseForm autoFocus={addAutoFocus} onSubmit={onAddSubmit} />
       <SearchInput

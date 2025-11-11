@@ -130,7 +130,7 @@ describe("pages/Home", () => {
     ];
     facade.isFiltered = true;
     facade.query = "abc";
-    facade.error = "Boom!";
+    facade.error = "error";
     facade.flags = {
       isIdle: false,
       isLoading: false,
@@ -154,7 +154,7 @@ describe("pages/Home", () => {
     expect(grid).toHaveAttribute("data-loading", "false");
 
     // PhrasesGrid muestra error y expone acciones
-    expect(screen.getByTestId("errorText")).toHaveTextContent("Boom!");
+    expect(screen.getByTestId("errorText")).toHaveTextContent("error");
 
     // onDelete
     await user.click(screen.getByLabelText("delete-first"));

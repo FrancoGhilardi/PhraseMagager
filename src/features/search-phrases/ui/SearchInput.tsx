@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Input } from "@shared/ui/Input";
 import { SearchIcon } from "@shared/ui/icons/SearchIcon";
-import { useDebouncedValue } from "@shared/lib/hooks/useDebouncedVaule";
+import { useDebouncedValue } from "@shared/lib/hooks/useDebouncedValue";
 
 export type SearchInputProps = {
   value?: string;
